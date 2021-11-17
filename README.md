@@ -142,20 +142,18 @@ assign next_pkt_len = pkt_len + 16'd4;
 ### Пример #4
 Неправильно:
 ```systemverilog
-always_ff @(posedge iclk)
-  begin
-    pkt_data_d1 <= ipkt_data;
-    pkt_empty_d1 <= ipkt_empty;
-  end
+always_ff @(posedge iclk) begin
+  pkt_data_d1 <= ipkt_data;
+  pkt_empty_d1 <= ipkt_empty;
+end
 ```
 
 Правильно:
 ```systemverilog
-always_ff @(posedge iclk)
-  begin
-    pkt_data_d1  <= ipkt_data;
-    pkt_empty_d1 <= ipkt_empty;
-  end
+always_ff @(posedge iclk) begin
+  pkt_data_d1  <= ipkt_data;
+  pkt_empty_d1 <= ipkt_empty;
+end
 ```
 
 ## Примеры использования конструкций и операторов
@@ -167,7 +165,7 @@ always_ff @(posedge iclk)
 
 #### Пример #1
 ```systemverilog
-wire data_ready;
+wire   data_ready;
 
 assign data_ready = ((pkt_word_cnt > 8'd5) && (!data_enable) && (pkt_len <= 16'd64));
 ```
@@ -175,11 +173,10 @@ assign data_ready = ((pkt_word_cnt > 8'd5) && (!data_enable) && (pkt_len <= 16'd
 #### Пример #2
 
 ```systemverilog
-always_comb
-  begin
-    if ((data_enable != 1'h1) && (fifo_bytes_empty >= pkt_size))
-      ...
-  end
+always_comb begin
+  if ((data_enable != 1'h1) && (fifo_bytes_empty >= pkt_size))
+    ...
+end
 ```
 
  - В сложных выражениях предпочтительно явно писать все условия. `(data_enable != 1'h1)` вместо `(!data_enable)`
@@ -203,16 +200,14 @@ else
 ### `if-else` вместе с `begin/end`
 
 ```systemverilog
-if (a > 5)
-  begin
-    c = 7;
-    d = 5;
-  end
-else
-  begin
-    c = 3;
-    d = 7;
-  end
+if (a > 5) begin
+  c = 7;
+  d = 5;
+end
+else begin
+  c = 3;
+  d = 7;
+end
 ```
 
 ### Вложенный `if-else`
@@ -227,21 +222,19 @@ else
     c = 5;
 ```
 ```systemverilog
-if (condition1)
-  begin
-    for (int i = 0; i < 10; i = i + 1)
-      statement1;
-  end
-else
-  begin
-    if (condition2)
-      statement2;
+if (condition1) begin
+  for (int i = 0; i < 10; i = i + 1)
+    statement1;
+end
+else begin
+  if (condition2)
+    statement2;
+  else
+    if (condition3)
+      statement3;
     else
-      if (condition3)
-        statement3;
-      else
-        statement4;
-  end
+      statement4;
+end
 ```
 
 ### Тернарный оператор `?`
@@ -264,34 +257,29 @@ assign y = (a > c) ? cnt_gt_zero :
 
 ```systemverilog
 case (code [ 1: 0])
-  2'b00:
-    begin
+  2'b00: begin
       state <= OR_S;
-    end
+  end
 
-  2'b01:
-    begin
-      state <= AND_S;
-    end
+  2'b01: begin
+    state <= AND_S;
+  end
 
-  2'b10:
-    begin
-      state <= NOT_S;
-    end
+  2'b10: begin
+    state <= NOT_S;
+  end
 
-  2'b11:
-    begin
-      state <= XOR_S;
-    end
+  2'b11: begin
+    state <= XOR_S;
+  end
 
-  default:
-    begin
-      state <= AND_S;
-    end
+  default: begin
+    state <= AND_S;
+  end
 endcase
 ``` 
 
- - Если `case` простой и не подразумевает никаких вложенных конструкций в `begin/end` блоке, то допускается делать так (для уменьшения строк и текста)
+ - Если `case` простой и не подразумевает никаких вложенных конструкций в `begin/end` блоке, то допускается делать так (для уменьшения объема кода)
 
 ```systemverilog
 case (code[ 1: 0])
@@ -342,7 +330,7 @@ endtask
 ...
 //
 
-wire sof,    // Start Of Frame
+wire sof    , // Start Of Frame
 reg  ofm_rdy, // frame ready
 wire pkt_eop, // End Of Packet
 ...
@@ -429,7 +417,7 @@ always_ff @(posedge iclk)
 ## Описание ресетов
 Есть два типа ресета (сброса):
   - асинхронный `arst`
-  - синхронный  `srst` (синоиним `rst`)
+  - синхронный  `rst` (синоиним `srst`)
 
  - В большинстве случаев мы используем синхронный сброс.
  - При объявлении портов модуля синхронный сброс описываются сразу после соответствующего клока. При необходимости можно использовать шаблон, аналогично клоку.
@@ -506,67 +494,63 @@ always_ff @(posedge iclk or posedge iarst)
  Для описания конечного автомата используется следующая схема:
 
 ```systemverilog
-enum reg [1:0] { IDLE_S,
-                   RUN_S,
-                   WAIT_S } state = IDLE_S;
+enum { IDLE,
+       RUN,
+       WAIT } state = IDLE;
 
 always_ff @(posedge iclk)
   if (irst)
-    state <= IDLE_S;
+    stm <= IDLE;
   else
     case( state )
-      IDLE_S:
-        begin
-          if( ... )
-            state <= RUN_S;
-        end
+      IDLE: begin
+        if( ... )
+          stm <= RUN;
+      end
       
-      RUN_S:
-        begin
-          if( ... ) 
-            next_state <= WAIT_S;
-          else
-            if( )
-              state <= IDLE_S; 
-        end
+      RUN_S: begin
+        if( ... ) 
+          stm <= WAIT;
+        else
+          if( )
+            stm <= IDLE;
+      end
 
-      WAIT_S:
-        begin
-          if( ... )
-            state <= RUN_S;
-        end
+      WAIT_S: begin
+        if( ... )
+          stm <= RUN;
+      end
 
-      default:
-        begin
-          state <= IDLE_S;
-        end
+      default: begin
+          stm <= IDLE;
+      end
 
     endcase
 
 ```
 
 Пояснение:
-  - `state` обозначает текущее состояние.  
-  - `IDLE_S` - дефолтное состояние, поэтому его устанавливают во время cинхронного сброса и `default` в `case`-блоке.
+  - `stm` обозначает текущее состояние. желательно придерживаться этого имени при описании конечных автоматов.
+  - `IDLE` - дефолтное состояние, поэтому его устанавливают во время cинхронного сброса и `default` в `case`-блоке.
      для удобства считаем, что это состояние должно идти первым в `enum` списке.
 
-- Имена состояний FSM описываются большими буквами и должны содержать суффикс `_S` (`IDLE_S`, `TX_S`, `WAIT_S` и т.д.).
-- Предпочтительно использовать конечный автомат Мура
+- Имена состояний FSM описываются большими буквами (`IDLE`, `WAIT` и т.д.).
+- Предпочтительно использовать конечный автомат Мура опиваемый одним always блоком.
 
 Категорически **запрещается**:
   - делать в одном модуле больше одного конечного автомата
-  - производить какие-либо другие операции, кроме операции сравнения (`==`, `!=`) с переменными `state`, например:
+  - производить какие-либо другие операции, кроме операции сравнения (`==`, `!=`) с переменными `stm`, например:
 
     ```systemverilog
      // так делать нельзя
-      assign b = ( state > RED_S );
-      assign c = ( state + 3'd2 ) > ( IDLE_S );
+      assign b = ( state > RED );
+      assign c = ( state + 3'd2 ) > ( IDLE );
     ```
 
 ## Размещение исходников
 
 Исходники размещаются в файлах. 
-Правило простое: один модуль, package, интерфейса - один файл. Название файла - название этого модуля. 
+Правило простое: один модуль, package, интерфейс - один файл. Названием файла является название этого модуля. 
 
 - Расширения:
   - Verilog: `.v`
@@ -594,21 +578,19 @@ always_ff @(posedge iclk)
 
 Пример:
 ```systemverilog
-always_comb
-  begin
-    a = b + d;
-  end
+always_comb begin
+  a = b + d;
+end
 ```
 
-Категорически **запрещается**:
-  - описывать логику при "создании" переменной:
+  - Не рекомендуется описывать логику при объявлении переменной:
   ```systemverilog
-  logic a = b && d;
+  wire a = b & d;
   ```
-
+Категорически **запрещается**:
   - описывать начальные значения для комбинационной логики:
   ```systemverilog
-  logic [7:0] a = 8'd5;
+  logic [ 7: 0] a = 8'h5;
 
   assign a = b + d;
   ```
@@ -646,11 +628,10 @@ always_ff @(posedge iclk)
  
 Пример:
 ```systemverilog
-always_latch
-  begin
-    if (en)
-      data = idata;
-  end
+always_latch begin
+  if (en)
+    data = idata;
+end
 ```
 
 ### Интерфейсы
@@ -724,10 +705,10 @@ module some_module #(
   input  wire  iclk,
   input  wire  irst,
 
-  input  wire  [DATA_WIDTH-1:0] idata,
-  input  wire  idata_val,
+  input  wire  [DATA_WIDTH-1:0] idata    ,
+  input  wire                   idata_val,
 
-  output logic [ CNT_WIDTH-1: 0]  ocnt
+  output logic [CNT_WIDTH-1: 0] ocnt
 );
 
 // some code...
@@ -765,30 +746,29 @@ some_module #(
  - Переменные в модуле "создаются" после описания сигналов модуля и до начала "работы" с этими сигналами. Тригеры инициализируются при описании
 
 ```systemverilog
-  output logic oabc = 1'h0
+  output reg oabc = 1'h0
 );
 
-logic [ 7: 0] cnt    = 8'h00;
-logic         cnt_en = 1'h0;
+reg  [ 7: 0] cnt    = 8'h00;
+reg          cnt_en = 1'h0;
 
-logic [63: 0] pkt_data;
+wire [63: 0] pkt_data;
 // ... some more signals
 
 // work with signal starts here
 ```
 
 - Связанные переменные, как и сигналы модуля необходимо логически отделять пустой строкой. 
-- Допускается создавать сигналы "рядом" с тем местом, где они употребляются, например:
+- Допускается создавать сигналы "рядом" с местом использования. Например:
 ```systemverilog
 logic [ 2: 0] vlan_mpls_cnt;
 // more signals
 
 // some code
-always_comb
-  begin
-    if (vlan_mpls_cnt > 2)
-      ...
-  end
+always_comb begin
+  if (vlan_mpls_cnt > 2)
+    ...
+end
 
 // calc vlan_mpls_cnt
 logic [ 1: 0] vlan_cnt;
@@ -811,7 +791,7 @@ assign vlan_mpls_cnt = vlan_cnt + mpls_cnt;
 - При наличии двунаправленных шин, направления передачи должны развязываться на
   верхнем уровне иерархии (в top-файле).
 
-- Необходимо в RTL описаниях использовать тип reg, wire, logic. Это позволит выявить ошибки, связанные с
+- Необходимо в RTL описаниях использовать тип reg, wire. Это позволит выявить ошибки, связанные с
   множественным назначением на этапе компиляции и ошибки, вызванные отсутствием
   инициализации. Рекомендуется использовать тип logic только в описаниях интерфейсов (порт с одним названием и разным направлением для разных модификаций интерфейса)
 
@@ -819,7 +799,7 @@ assign vlan_mpls_cnt = vlan_cnt + mpls_cnt;
 
 - Настоятельно рекомендуется защелкивать в триггеры выходные сигналы модулей. Это повысит максимальную скорость работы устройства.
 
-- Все критичные к быстродействию узлы по возможности следует размещать в отдельном модуле. Это позволит оптимизировать его независимо от прочих узлов.
+- Все критичные к быстродействию узлы, по возможности, следует размещать в отдельном модуле. Это позволит оптимизировать его независимо от прочих узлов.
 
 - Все макроподстановки (`define) должны определяться в отдельном файле. В исключительных случаях, допустимо определение в самом модуле.
 
@@ -827,4 +807,4 @@ assign vlan_mpls_cnt = vlan_cnt + mpls_cnt;
 
 - Настоятельно рекомендуется вводить в модуль только те сигналы которые реально используются
 
-- По возможности, модули должны быть параметризованны. Не надо пытаться параметризовывать "все для всех". Это делает код менее читабельным и понятным. Лучше иметь два ясных и кратких модуля чем один путаный
+- Модули могут  быть параметризованны. Не надо пытаться параметризовывать "все для всех". Это делает код менее читабельным и понятным. Лучше иметь два ясных и кратких модуля чем один путаный
